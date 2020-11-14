@@ -102,6 +102,59 @@ export class ShadowAccessory {
 					if (characteristic.UUID == (new this.hapCharacteristic.CurrentTemperature()).UUID) {
 						characteristic.props.minValue = -50;
 					}
+					if (service.controlService.UUID == this.hapService.Thermostat.UUID) {
+						if (characteristic.UUID == this.hapCharacteristic.CurrentTemperature.UUID
+							|| characteristic.UUID == this.hapCharacteristic.TargetTemperature.UUID) {
+							switch (this.device.type) {
+								case "com.fibaro.hvacSystemHeat":
+								case "com.fibaro.hvacSystemAuto":
+									characteristic.props.maxValue = parseFloat(this.device.properties.heatingThermostatSetpointCapabilitiesMax);
+									characteristic.props.minValue = parseFloat(this.device.properties.heatingThermostatSetpointCapabilitiesMin);
+									characteristic.props.minStep = parseFloat(this.device.properties.heatingThermostatSetpointStep["C"]);
+									break;
+								case "com.fibaro.hvacSystemCool":
+									characteristic.props.maxValue = parseFloat(this.device.properties.coolingThermostatSetpointCapabilitiesMax);
+									characteristic.props.minValue = parseFloat(this.device.properties.coolingThermostatSetpointCapabilitiesMin);
+									characteristic.props.minStep = parseFloat(this.device.properties.coolingThermostatSetpointStep["C"]);
+									break;
+							}
+						}
+						else if (characteristic.UUID == this.hapCharacteristic.CurrentHeatingCoolingState.UUID
+							|| characteristic.UUID == this.hapCharacteristic.TargetHeatingCoolingState.UUID) {
+						
+							const modes = this.device.properties.supportedThermostatModes
+							var maxValue = 0
+							if (modes) {
+								const validValues = modes.map((mode) => {
+									var value = 0
+									switch (mode) {
+										case "Off":
+											value = this.hapCharacteristic.CurrentHeatingCoolingState.OFF
+											break;
+										case "Heat":
+											value = this.hapCharacteristic.CurrentHeatingCoolingState.HEAT
+											break;
+										case "Cool":
+											value = this.hapCharacteristic.CurrentHeatingCoolingState.COOL
+											break;
+										case "Auto":
+											if (characteristic.UUID == this.hapCharacteristic.TargetHeatingCoolingState.UUID)
+												value = this.hapCharacteristic.CurrentHeatingCoolingState.AUTO
+											break;
+										default:
+											break;
+									}
+									if (value > maxValue) maxValue = value
+									return value
+								})
+								validValues.filter((v,i) => validValues.indexOf(v) === i)
+								characteristic.setProps({
+									maxValue: maxValue,
+									validValues: validValues	
+								})
+							}
+						}
+					}
 					platform.bindCharacteristicEvents(characteristic, service.controlService);
 				}
 			}
@@ -228,6 +281,17 @@ export class ShadowAccessory {
 			case "com.fibaro.doorLock":
 			case "com.fibaro.gerda":
 				ss = [new ShadowService(new hapService.LockMechanism(device.name), [hapCharacteristic.LockCurrentState, hapCharacteristic.LockTargetState])];
+				break;
+			case "com.fibaro.hvacSystemHeat":
+				controlService = new hapService.Thermostat(device.name);	
+				controlCharacteristics = [
+					hapCharacteristic.CurrentTemperature,
+					hapCharacteristic.TargetTemperature,
+					hapCharacteristic.CurrentHeatingCoolingState,
+					hapCharacteristic.TargetHeatingCoolingState,
+					hapCharacteristic.TemperatureDisplayUnits
+				];
+				ss = [new ShadowService(controlService, controlCharacteristics)];
 				break;
 			case "com.fibaro.setPoint":
 			case "com.fibaro.FGT001":

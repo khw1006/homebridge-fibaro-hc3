@@ -260,10 +260,17 @@ class FibaroHC3 {
 			var propertyChanged = "value"; // subscribe to the changes of this property
 			if (service.HSBValue != undefined)
 				propertyChanged = "color";
-			if (service.operatingModeId != undefined) {
-				if (characteristic.UUID == (new Characteristic.CurrentHeatingCoolingState()).UUID || characteristic.UUID == (new Characteristic.TargetHeatingCoolingState()).UUID) {
-					propertyChanged = "mode";
-				}
+			if (service.UUID == Service.Thermostat.UUID
+				&& characteristic.UUID == Characteristic.CurrentTemperature.UUID) {
+				// Use property "heatingThermostatSetpointFuture" which is not in use now
+				// In HC3, it is set with current temperature value by script
+				propertyChanged = "heatingThermostatSetpointFuture"
+			}
+			if (characteristic.UUID == Characteristic.TargetTemperature.UUID) {
+				propertyChanged = "heatingThermostatSetpoint";
+			}
+			if (characteristic.UUID == (new Characteristic.CurrentHeatingCoolingState()).UUID || characteristic.UUID == (new Characteristic.TargetHeatingCoolingState()).UUID) {
+				propertyChanged = "thermostatMode";
 			}
 			if (service.UUID == (Service.WindowCovering.UUID) && (characteristic.UUID == (new Characteristic.CurrentHorizontalTiltAngle).UUID)) {
 				propertyChanged = "value2";
