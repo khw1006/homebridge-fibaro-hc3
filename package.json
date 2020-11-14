@@ -1,6 +1,6 @@
 {
-  "name": "homebridge-fibaro-hc3",
-  "version": "1.0.5",
+  "name": "@khw1006/homebridge-fibaro-hc3",
+  "version": "1.0.6-snapshot",
   "description": "Homebridge plugin for Fibaro Home Center 3 ",
   "note": "peerDependencies is hardcoded to peerDepdendencies in homebridge!!!",
   "main": "dist/index.js",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ilcato/homebridge-fibaro-hc3.git"
+    "url": "https://github.com/khw1006/homebridge-fibaro-hc3.git"
   },
   "keywords": [
     "homebridge-plugin",
